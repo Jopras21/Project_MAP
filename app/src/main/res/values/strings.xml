@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Project_MAP</string>
+
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="forgot_password_dialog_title">Forgot Password</string>
+    <string name="forgot_password_dialog_message">A password reset link has been sent to your email (simulation).</string>
+    <string name="ok">OK</string>
+
+    <string name="full_name_hint">Full Name</string>
+
 </resources>
