@@ -14,19 +14,14 @@ class LoginRegisterActivity : AppCompatActivity() {
         val viewPager = findViewById<ViewPager2>(R.id.view_pager)
         val tabLayout = findViewById<TabLayout>(R.id.tab_layout)
 
-        // Buat dan pasang adapter
-        val adapter = ViewPagerAdapter(this)
-        viewPager.adapter = adapter
+        viewPager.adapter = ViewPagerAdapter(this)
 
-        // Hubungkan TabLayout dengan ViewPager2
+        // buat pastiin page yang sekarng
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = if (position == 0) "Login" else "Register"
         }.attach()
 
-        // Ambil data tab yang dikirim dari AuthActivity
         val selectedTabIndex = intent.getIntExtra(AuthActivity.EXTRA_SELECTED_TAB, 0)
-
-        // Pindahkan ViewPager2 ke tab yang sesuai
         viewPager.setCurrentItem(selectedTabIndex, false)
     }
 }
