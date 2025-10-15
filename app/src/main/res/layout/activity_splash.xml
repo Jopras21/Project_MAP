@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/purple_500">
+
+    <ImageView
+        android:id="@+id/logoSalesight"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:src="@drawable/salesight_logo"
+        android:contentDescription="Salesight Logo"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SALESIGHT"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="See What’s Selling Next"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="6dp" />
+</LinearLayout>
