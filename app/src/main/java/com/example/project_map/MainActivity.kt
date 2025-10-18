@@ -11,11 +11,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main) // layout main
 
         val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment // host nav
+        val navController = navHostFragment.navController // controller
 
         val appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -24,9 +24,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.prediksiFragment,
                 R.id.profilFragment
             )
-        )
+        ) // top-level
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
-        bottomNav.setupWithNavController(navController)
+        bottomNav.setupWithNavController(navController) // hubungkan bottom nav
     }
 }

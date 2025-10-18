@@ -20,14 +20,14 @@ class HomeFragment : Fragment() {
     private lateinit var adapter: ProdukAdapter
 
     companion object {
-        val productList = mutableListOf<Produk>()
+        val productList = mutableListOf<Produk>() // data sederhana
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_home, container, false)
+        return inflater.inflate(R.layout.fragment_home, container, false) // layout home
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,26 +36,32 @@ class HomeFragment : Fragment() {
         val btnTambah = view.findViewById<Button>(R.id.btnTambah)
         val btnPrediksi = view.findViewById<Button>(R.id.btnPrediksi)
 
+        // set RecyclerView
         recyclerView = view.findViewById(R.id.rvProduk)
         adapter = ProdukAdapter(productList, findNavController())
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
+        // ambil nama user
         val sharedPref = requireActivity().getSharedPreferences(
             PrefConstants.PREF_NAME,
             AppCompatActivity.MODE_PRIVATE
         )
         val userName = sharedPref.getString(PrefConstants.KEY_USERNAME, "Pengguna")
 
+        // sapaan & jumlah
         tvWelcome.text = getString(R.string.home_welcome_message, userName)
-
         val productCount = productList.size
-        tvTotalProduk.text = resources.getQuantityString(R.plurals.home_product_count, productCount, productCount)
+        tvTotalProduk.text = resources.getQuantityString(
+            R.plurals.home_product_count, productCount, productCount
+        )
 
+        // ke form tambah
         btnTambah.setOnClickListener {
             findNavController().navigate(R.id.produkFormFragment)
         }
 
+        // ke tab prediksi
         val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
         btnPrediksi.setOnClickListener {
             bottomNav?.selectedItemId = R.id.prediksiFragment
@@ -65,6 +71,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        // refresh teks
         val sharedPref = requireActivity().getSharedPreferences(
             PrefConstants.PREF_NAME,
             AppCompatActivity.MODE_PRIVATE
@@ -75,9 +82,10 @@ class HomeFragment : Fragment() {
         view?.findViewById<TextView>(R.id.tvTotalProduk)?.text =
             "Kamu memiliki ${productList.size} produk yang siap diprediksi"
 
-        adapter.notifyDataSetChanged()
+        adapter.notifyDataSetChanged() // refresh list
     }
 }
+
 data class Produk(
     var nama: String,
     var harga: Double,
@@ -86,6 +94,7 @@ data class Produk(
     var kategori: String,
     var promoAktif: Boolean
 )
+
 class ProdukAdapter(
     private val data: MutableList<Produk>,
     private val navController: androidx.navigation.NavController
@@ -98,6 +107,7 @@ class ProdukAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        // inflate item
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_produk, parent, false)
         return ViewHolder(view)
@@ -105,8 +115,9 @@ class ProdukAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val produk = data[position]
-        holder.tvNama.text = "${produk.nama} - Rp${produk.harga}"
+        holder.tvNama.text = "${produk.nama} - Rp${produk.harga}" // tampilkan nama & harga
 
+        // edit → kirim data dasar
         holder.btnEdit.setOnClickListener {
             val bundle = Bundle().apply {
                 putInt("index", position)
@@ -116,6 +127,7 @@ class ProdukAdapter(
             navController.navigate(R.id.produkFormFragment, bundle)
         }
 
+        // hapus dengan konfirmasi
         holder.btnDelete.setOnClickListener {
             val context = holder.itemView.context
 
@@ -133,5 +145,6 @@ class ProdukAdapter(
                 .show()
         }
     }
-    override fun getItemCount() = data.size
+
+    override fun getItemCount() = data.size // jumlah item
 }

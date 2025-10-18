@@ -9,18 +9,19 @@ import androidx.appcompat.app.AppCompatActivity
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        setContentView(R.layout.activity_splash) // layout splash
 
         val sharedPref = getSharedPreferences(PrefConstants.PREF_NAME, MODE_PRIVATE)
-        val isLoggedIn = sharedPref.getBoolean("isLoggedIn", false)
+        val isLoggedIn = sharedPref.getBoolean("isLoggedIn", false) // cek login
 
+        // delay sebentar lalu arahkan
         Handler(Looper.getMainLooper()).postDelayed({
             if (isLoggedIn) {
-                startActivity(Intent(this, MainActivity::class.java))
+                startActivity(Intent(this, MainActivity::class.java)) // ke main
             } else {
-                startActivity(Intent(this, LoginActivity::class.java))
+                startActivity(Intent(this, LoginActivity::class.java)) // ke login
             }
-            finish()
+            finish() // tutup splash
         }, 1500)
     }
 }

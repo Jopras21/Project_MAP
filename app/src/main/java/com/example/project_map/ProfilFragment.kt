@@ -28,12 +28,13 @@ class ProfilFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_profil, container, false)
+        return inflater.inflate(R.layout.fragment_profil, container, false) // layout profil
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // view
         tvNama = view.findViewById(R.id.tvNama)
         etNama = view.findViewById(R.id.etNama)
         layoutEtNama = view.findViewById(R.id.layoutEtNama)
@@ -55,9 +56,10 @@ class ProfilFragment : Fragment() {
             AppCompatActivity.MODE_PRIVATE
         )
 
-        tvNama.text = sharedPref.getString(PrefConstants.KEY_USERNAME, "Pengguna")
-        exitAllModes()
+        tvNama.text = sharedPref.getString(PrefConstants.KEY_USERNAME, "Pengguna") // set nama
+        exitAllModes() // mulai di view mode
 
+        // klik tombol
         btnEdit.setOnClickListener { enterEditMode() }
         btnBatal.setOnClickListener { exitAllModes() }
         btnChangePhoto.setOnClickListener { Toast.makeText(requireContext(), "Fitur ubah foto belum diaktifkan 📸", Toast.LENGTH_SHORT).show() }
@@ -71,11 +73,13 @@ class ProfilFragment : Fragment() {
             if (namaBaru.isEmpty()) {
                 Toast.makeText(requireContext(), "Nama tidak boleh kosong!", Toast.LENGTH_SHORT).show()
             } else {
-                showSaveNameDialog(sharedPref, namaBaru)
+                showSaveNameDialog(sharedPref, namaBaru) // simpan nama
             }
         }
     }
+
     private fun enterEditMode() {
+        // tampil mode edit nama
         layoutViewMode.isVisible = false
         tvNama.isVisible = false
         layoutPasswordMode.isVisible = false
@@ -83,25 +87,32 @@ class ProfilFragment : Fragment() {
         layoutEtNama.isVisible = true
         etNama.setText(tvNama.text)
     }
+
     private fun enterPasswordMode() {
+        // tampil mode ganti password
         layoutViewMode.isVisible = false
         layoutEditMode.isVisible = false
         layoutEtNama.isVisible = false
         tvNama.isVisible = false
         layoutPasswordMode.isVisible = true
     }
+
     private fun exitPasswordMode() {
         layoutPasswordMode.isVisible = false
-        enterEditMode() // Kembali ke mode edit nama
+        enterEditMode() // balik ke edit nama
     }
+
     private fun exitAllModes() {
+        // kembali ke view mode
         layoutViewMode.isVisible = true
         tvNama.isVisible = true
         layoutEditMode.isVisible = false
         layoutEtNama.isVisible = false
         layoutPasswordMode.isVisible = false
     }
+
     private fun showSaveNameDialog(sharedPref: SharedPreferences, namaBaru: String) {
+        // dialog simpan nama
         AlertDialog.Builder(requireContext())
             .setTitle("Simpan Perubahan?")
             .setMessage("Apakah kamu yakin ingin memperbarui profil?")
@@ -114,7 +125,9 @@ class ProfilFragment : Fragment() {
             .setNegativeButton("Tidak", null)
             .show()
     }
+
     private fun showLogoutDialog(sharedPref: SharedPreferences) {
+        // dialog logout
         AlertDialog.Builder(requireContext())
             .setTitle("Logout")
             .setMessage("Apakah kamu yakin ingin keluar?")
@@ -128,11 +141,12 @@ class ProfilFragment : Fragment() {
             .setNegativeButton("Tidak", null)
             .show()
     }
+
     private fun saveNewPassword(sharedPref: SharedPreferences) {
+        // ambil input
         val etCurrent = view?.findViewById<EditText>(R.id.etCurrentPassword)
         val etNew = view?.findViewById<EditText>(R.id.etNewPassword)
         val etConfirm = view?.findViewById<EditText>(R.id.etConfirmPassword)
-
         if (etCurrent == null || etNew == null || etConfirm == null) return
 
         val current = etCurrent.text.toString()
@@ -140,6 +154,7 @@ class ProfilFragment : Fragment() {
         val confirm = etConfirm.text.toString()
         val storedHash = sharedPref.getString(PrefConstants.KEY_PASSWORD, "")
 
+        // cek password
         if (hash(current) != storedHash) {
             etCurrent.error = "Password saat ini salah"
             return
@@ -153,12 +168,15 @@ class ProfilFragment : Fragment() {
             return
         }
 
+        // simpan hash baru
         val newPasswordHash = hash(newPass)
         sharedPref.edit().putString(PrefConstants.KEY_PASSWORD, newPasswordHash).apply()
         Toast.makeText(requireContext(), "Password berhasil diubah!", Toast.LENGTH_SHORT).show()
         exitPasswordMode()
     }
+
     private fun hash(text: String): String {
+        // hash SHA-256
         val md = MessageDigest.getInstance("SHA-256")
         val digest = md.digest(text.toByteArray(Charsets.UTF_8))
         return digest.joinToString("") { "%02x".format(it) }

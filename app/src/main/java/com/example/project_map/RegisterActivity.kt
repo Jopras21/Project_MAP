@@ -14,8 +14,9 @@ class RegisterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register)
+        setContentView(R.layout.activity_register) // layout register
 
+        // view
         val etName = findViewById<EditText>(R.id.etName)
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
@@ -23,18 +24,20 @@ class RegisterActivity : AppCompatActivity() {
         val btnRegister = findViewById<Button>(R.id.btnRegister)
         val tvToLogin = findViewById<TextView>(R.id.tvToLogin)
 
+        // ke login
         tvToLogin.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
 
+        // daftar
         btnRegister.setOnClickListener {
             val name = etName.text.toString().trim()
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
             val confirmPassword = etConfirmPassword.text.toString().trim()
 
-            // Validasi Input
+            // validasi dasar
             if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
                 showToast("Semua kolom harus diisi!")
                 return@setOnClickListener
@@ -59,8 +62,9 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val hashedPassword = hash(password)
+            val hashedPassword = hash(password) // hash pwd
 
+            // simpan
             sharedPref.edit().apply {
                 putString(PrefConstants.KEY_USERNAME, name)
                 putString(PrefConstants.KEY_EMAIL, email)
@@ -74,11 +78,15 @@ class RegisterActivity : AppCompatActivity() {
             finish()
         }
     }
+
+    // hash SHA-256
     private fun hash(text: String): String {
         val md = MessageDigest.getInstance("SHA-256")
         val digest = md.digest(text.toByteArray(Charsets.UTF_8))
         return digest.joinToString("") { "%02x".format(it) }
     }
+
+    // helper toast
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }

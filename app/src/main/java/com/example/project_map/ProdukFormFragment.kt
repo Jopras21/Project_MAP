@@ -16,19 +16,21 @@ import java.util.*
 
 class ProdukFormFragment : Fragment() {
 
-    private var editIndex: Int? = null
-    private val decimalFormat: DecimalFormat = NumberFormat.getInstance(Locale("in", "ID")) as DecimalFormat
+    private var editIndex: Int? = null // index edit (opsional)
+    private val decimalFormat: DecimalFormat =
+        NumberFormat.getInstance(Locale("in", "ID")) as DecimalFormat // format ID
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_produk_form, container, false)
+        return inflater.inflate(R.layout.fragment_produk_form, container, false) // layout form
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // view
         val etNama = view.findViewById<EditText>(R.id.etNamaProduk)
         val etHarga = view.findViewById<EditText>(R.id.etHargaProduk)
         val etStok = view.findViewById<EditText>(R.id.etStokProduk)
@@ -37,11 +39,14 @@ class ProdukFormFragment : Fragment() {
         val cbPromo = view.findViewById<CheckBox>(R.id.cbPromo)
         val btnSimpan = view.findViewById<Button>(R.id.btnSimpan)
         val btnKembali = view.findViewById<Button>(R.id.btnKembali)
+
+        // isi spinner
         val kategoriList = listOf("Makanan", "Minuman", "Lainnya")
         val adapterSpinner = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, kategoriList)
         adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spKategori.adapter = adapterSpinner
 
+        // format harga ribuan
         etHarga.addTextChangedListener(object : TextWatcher {
             private var current = ""
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -50,8 +55,7 @@ class ProdukFormFragment : Fragment() {
                 if (s.toString() != current) {
                     etHarga.removeTextChangedListener(this)
 
-                    val cleanString = s.toString().replace("[^\\d]".toRegex(), "")
-
+                    val cleanString = s.toString().replace("[^\\d]".toRegex(), "") // angka saja
                     if (cleanString.isNotEmpty()) {
                         val parsed = cleanString.toDouble()
                         val formatted = decimalFormat.format(parsed)
@@ -67,10 +71,11 @@ class ProdukFormFragment : Fragment() {
                 }
             }
         })
+
+        // mode edit → isi form
         arguments?.let { args ->
             editIndex = args.getInt("index", -1).takeIf { it != -1 }
             val produk = editIndex?.let { HomeFragment.productList[it] }
-
             produk?.let {
                 etNama.setText(it.nama)
                 etHarga.setText(decimalFormat.format(it.harga))
@@ -81,9 +86,10 @@ class ProdukFormFragment : Fragment() {
             }
         }
 
+        // simpan
         btnSimpan.setOnClickListener {
             val nama = etNama.text.toString().trim()
-            val hargaString = etHarga.text.toString().replace(".", "").replace(",", "")
+            val hargaString = etHarga.text.toString().replace(".", "").replace(",", "") // buang pemisah
             val harga = hargaString.toDoubleOrNull()
             val stok = etStok.text.toString().toIntOrNull()
             val diskon = etDiskon.text.toString().toDoubleOrNull()
@@ -95,22 +101,28 @@ class ProdukFormFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            // konfirmasi
             AlertDialog.Builder(requireContext())
                 .setTitle("Konfirmasi")
                 .setMessage("Apakah Anda yakin ingin menyimpan data produk ini?")
                 .setPositiveButton("Ya") { _, _ ->
                     if (editIndex != null) {
-                        HomeFragment.productList[editIndex!!] = Produk(nama, harga, stok, diskon, kategori, promoAktif)
+                        HomeFragment.productList[editIndex!!] =
+                            Produk(nama, harga, stok, diskon, kategori, promoAktif) // update
                         Toast.makeText(requireContext(), "Produk berhasil diperbarui!", Toast.LENGTH_SHORT).show()
                     } else {
-                        HomeFragment.productList.add(Produk(nama, harga, stok, diskon, kategori, promoAktif))
+                        HomeFragment.productList.add(
+                            Produk(nama, harga, stok, diskon, kategori, promoAktif)
+                        ) // tambah
                         Toast.makeText(requireContext(), "Produk berhasil disimpan!", Toast.LENGTH_SHORT).show()
                     }
-                    findNavController().popBackStack() // Kembali ke halaman sebelumnya
+                    findNavController().popBackStack() // kembali
                 }
                 .setNegativeButton("Tidak", null)
                 .show()
         }
+
+        // kembali
         btnKembali.setOnClickListener {
             findNavController().popBackStack()
         }
