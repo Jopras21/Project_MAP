@@ -5,28 +5,30 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
-    <!-- 🏠 Halaman Home -->
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.project_map.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home" />
 
-    <!-- 📊 Halaman Statistik -->
+    <fragment
+        android:id="@+id/riwayatFragment"
+        android:name="com.example.project_map.RiwayatFragment"
+        android:label="Riwayat"
+        tools:layout="@layout/fragment_riwayat"/>
+
     <fragment
         android:id="@+id/statistikFragment"
         android:name="com.example.project_map.StatistikFragment"
         android:label="Statistik"
         tools:layout="@layout/fragment_statistik" />
 
-    <!-- 🔮 Halaman Prediksi -->
     <fragment
         android:id="@+id/prediksiFragment"
         android:name="com.example.project_map.PrediksiFragment"
         android:label="Prediksi Penjualan"
         tools:layout="@layout/fragment_prediksi" />
 
-    <!-- 👤 Halaman Profil -->
     <fragment
         android:id="@+id/profilFragment"
         android:name="com.example.project_map.ProfilFragment"
@@ -34,7 +36,6 @@
 
     </fragment>
 
-    <!-- ✏️ Halaman Form Produk -->
     <fragment
         android:id="@+id/produkFormFragment"
         android:name="com.example.project_map.ProdukFormFragment"

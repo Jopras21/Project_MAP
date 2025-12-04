@@ -1,22 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F5F7"
+    android:fillViewport="true">
 
-    <TextView
-        android:text="@string/prediction_page_title"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        android:padding="24dp">
 
-    <TextView
-        android:text="@string/prediction_feature_placeholder"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-</LinearLayout>
+        <TextView
+            android:id="@+id/tvTitlePrediksi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prediksi Penjualan"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pilih produk untuk melihat prediksi penjualan"
+            android:textSize="14sp"
+            android:alpha="0.7"
+            android:layout_marginBottom="16dp" />
+
+        <Spinner
+            android:id="@+id/spProduk"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/form_input_background"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/glass_card"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvRingkasanNama"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nama Produk"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp"/>
+
+            <TextView
+                android:id="@+id/tvRingkasanHarga"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Harga: Rp0"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/tvRingkasanDiskon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Diskon: 0%"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/tvRingkasanStok"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Stok: 0"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/tvRingkasanPromo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Promo: Tidak"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPrediksiSekarang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prediksi Sekarang"
+            android:textAllCaps="false"
+            android:paddingVertical="12dp"
+            app:cornerRadius="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tvHasilPrediksi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hasil prediksi akan muncul di sini"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:paddingTop="4dp" />
+
+    </LinearLayout>
+</ScrollView>

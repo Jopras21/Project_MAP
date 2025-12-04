@@ -7,6 +7,7 @@
     <string name="login_hint_password">Password</string>
     <string name="login_button_login">Login</string>
     <string name="menu_home">Home</string>
+    <string name="menu_riwayat">Riwayat</string>
     <string name="menu_prediksi">Prediksi</string>
     <string name="menu_statistik">Statistik</string>
     <string name="menu_profil">Profil</string>

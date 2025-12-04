@@ -7,6 +7,11 @@
         android:icon="@drawable/ic_home" />
 
     <item
+        android:id="@+id/riwayatFragment"
+        android:title="@string/menu_riwayat"
+        android:icon="@drawable/ic_riwayat" />
+
+    <item
         android:id="@+id/prediksiFragment"
         android:title="@string/menu_prediksi"
         android:icon="@drawable/prediction" />

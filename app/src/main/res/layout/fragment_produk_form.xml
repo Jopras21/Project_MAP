@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F7"
-    android:fillViewport="true"
-    tools:context=".ProdukFormFragment">
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,12 +32,22 @@
             android:padding="14dp" />
 
         <EditText
-            android:id="@+id/etHargaProduk"
+            android:id="@+id/etListedPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:background="@drawable/form_input_background"
-            android:hint="@string/product_form_hint_price"
+            android:hint="Harga Normal"
+            android:inputType="numberDecimal"
+            android:padding="14dp" />
+
+        <EditText
+            android:id="@+id/etDiscountedPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/form_input_background"
+            android:hint="Harga Setelah Diskon"
             android:inputType="numberDecimal"
             android:padding="14dp" />
 
@@ -52,34 +60,6 @@
             android:hint="@string/product_form_hint_stock"
             android:inputType="number"
             android:padding="14dp" />
-
-        <EditText
-            android:id="@+id/etDiskonProduk"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/form_input_background"
-            android:hint="@string/product_form_hint_discount"
-            android:inputType="numberDecimal"
-            android:padding="14dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/product_form_label_category"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
-
-        <Spinner
-            android:id="@+id/spKategori"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/form_input_background"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"/>
 
         <CheckBox
             android:id="@+id/cbPromo"
