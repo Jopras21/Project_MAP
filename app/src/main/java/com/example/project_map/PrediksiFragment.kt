@@ -41,7 +41,7 @@ class PrediksiFragment : Fragment() {
     }
 
     private fun setupSpinner() {
-        val productList = HomeFragment.productList
+        val productList = LocalData.productList
 
         if (productList.isEmpty()) {
             Toast.makeText(requireContext(), "Belum ada produk", Toast.LENGTH_SHORT).show()

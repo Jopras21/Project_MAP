@@ -8,15 +8,18 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import java.security.MessageDigest
 
 class LoginActivity : AppCompatActivity() {
 
+    private val db = Firebase.firestore
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login) // layout login
+        setContentView(R.layout.activity_login)
 
-        // view
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
         val btnLogin = findViewById<Button>(R.id.btnLogin)
@@ -24,20 +27,21 @@ class LoginActivity : AppCompatActivity() {
 
         val sharedPref = getSharedPreferences(PrefConstants.PREF_NAME, MODE_PRIVATE)
 
-        // auto-skip jika sudah login
-        val isLoggedIn = sharedPref.getBoolean(PrefConstants.KEY_IS_LOGGED_IN, false)
-        if (isLoggedIn) {
+        if (sharedPref.getBoolean(PrefConstants.KEY_IS_LOGGED_IN, false)) {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
             return
         }
 
-        // tombol login
+        tvToRegister.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
+            finish()
+        }
+
         btnLogin.setOnClickListener {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            // validasi dasar
             if (email.isEmpty() || password.isEmpty()) {
                 showToast("Email dan password harus diisi!")
                 return@setOnClickListener
@@ -47,40 +51,56 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ambil data tersimpan
-            val savedEmail = sharedPref.getString(PrefConstants.KEY_EMAIL, "")
-            val savedPasswordHash = sharedPref.getString(PrefConstants.KEY_PASSWORD, "")
-            val savedName = sharedPref.getString(PrefConstants.KEY_USERNAME, "Pengguna")
+            val passwordHash = hash(password)
 
-            val passwordInputHash = hash(password) // hash input
+            val userDoc = db.collection("users").document(email)
 
-            // cek kredensial
-            if (email == savedEmail && passwordInputHash == savedPasswordHash) {
-                sharedPref.edit().putBoolean(PrefConstants.KEY_IS_LOGGED_IN, true).apply()
-                showToast("Selamat datang, $savedName!")
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            } else {
-                showToast("Email atau password salah!")
-            }
-        }
+            userDoc.get()
+                .addOnSuccessListener { snapshot ->
+                    if (!snapshot.exists()) {
+                        showToast("Email tidak terdaftar!")
+                        return@addOnSuccessListener
+                    }
 
-        // ke register
-        tvToRegister.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
-            finish()
+                    val user = snapshot.toObject(User::class.java)
+
+                    if (user == null) {
+                        showToast("Data user rusak, hubungi admin!")
+                        return@addOnSuccessListener
+                    }
+
+                    if (user.passwordHash != passwordHash) {
+                        showToast("Password salah!")
+                        return@addOnSuccessListener
+                    }
+
+                    userDoc.update("lastLogin", System.currentTimeMillis())
+
+                    sharedPref.edit().apply {
+                        putString(PrefConstants.KEY_USERNAME, user.name)
+                        putString(PrefConstants.KEY_EMAIL, user.email)
+                        putString(PrefConstants.KEY_PASSWORD, user.passwordHash)
+                        putBoolean(PrefConstants.KEY_IS_LOGGED_IN, true)
+                        apply()
+                    }
+
+                    showToast("Selamat datang, ${user.name}!")
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                }
+                .addOnFailureListener { e ->
+                    showToast("Gagal login: ${e.message}")
+                }
         }
     }
 
-    // hash SHA-256
     private fun hash(text: String): String {
         val md = MessageDigest.getInstance("SHA-256")
         val digest = md.digest(text.toByteArray(Charsets.UTF_8))
         return digest.joinToString("") { "%02x".format(it) }
     }
 
-    // helper toast
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    private fun showToast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
     }
 }

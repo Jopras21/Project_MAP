@@ -1,12 +1,12 @@
 package com.example.project_map
 
 data class Product(
-    var nama: String,
-    var listedPrice: Double,
-    var discountedPrice: Double,
-    var priceGap: Double,
-    var stok: Int,
-    var promoAktif: Boolean
+    var id: String? = null,
+    var userId: String = "",
+    var nama: String = "",
+    var listedPrice: Double = 0.0,
+    var discountedPrice: Double = 0.0,
+    var priceGap: Double = 0.0,
+    var stok: Int = 0,
+    var promoAktif: Boolean = false
 )
-
-

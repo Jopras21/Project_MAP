@@ -15,6 +15,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header -->
         <TextView
             android:id="@+id/tvHeader"
             android:layout_width="match_parent"
@@ -28,6 +29,7 @@
             android:gravity="center"
             android:textAlignment="center"/>
 
+        <!-- Foto Profil -->
         <ImageView
             android:id="@+id/ivProfile"
             android:layout_width="110dp"
@@ -37,6 +39,7 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_launcher_foreground" />
 
+        <!-- Nama -->
         <TextView
             android:id="@+id/tvNama"
             android:layout_width="wrap_content"
@@ -46,6 +49,18 @@
             android:textSize="16sp"
             tools:text="Nama Pengguna" />
 
+        <!-- EMAIL (DITAMBAHKAN) -->
+        <TextView
+            android:id="@+id/tvEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="email@example.com"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            android:textAlignment="center" />
+
+        <!-- Edit Nama Mode -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layoutEtNama"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -53,8 +68,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="@string/profile_hint_new_name"
-            android:visibility="gone"
-            tools:visibility="visible">
+            android:visibility="gone">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etNama"
@@ -64,6 +78,7 @@
                 android:textSize="14sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- MODE VIEW -->
         <LinearLayout
             android:id="@+id/layoutViewMode"
             android:layout_width="match_parent"
@@ -93,6 +108,7 @@
                 app:strokeColor="?attr/colorError" />
         </LinearLayout>
 
+        <!-- MODE EDIT PROFIL -->
         <LinearLayout
             android:id="@+id/layoutEditMode"
             android:layout_width="match_parent"
@@ -150,6 +166,7 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- MODE GANTI PASSWORD -->
         <LinearLayout
             android:id="@+id/layoutChangePasswordMode"
             android:layout_width="match_parent"
@@ -229,5 +246,6 @@
                     app:cornerRadius="12dp" />
             </LinearLayout>
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

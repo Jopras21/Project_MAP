@@ -1,184 +1,167 @@
 package com.example.project_map
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.example.project_map.viewmodel.ProfileViewModel
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.security.MessageDigest
 
 class ProfilFragment : Fragment() {
 
+    private lateinit var viewModel: ProfileViewModel
+    private lateinit var sharedPref: SharedPreferences
+
     private lateinit var tvNama: TextView
+    private lateinit var tvEmail: TextView
     private lateinit var etNama: TextInputEditText
     private lateinit var layoutEtNama: TextInputLayout
-    private lateinit var layoutEditMode: LinearLayout
-    private lateinit var layoutViewMode: LinearLayout
-    private lateinit var layoutPasswordMode: LinearLayout
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_profil, container, false) // layout profil
+    private lateinit var layoutView: LinearLayout
+    private lateinit var layoutEdit: LinearLayout
+    private lateinit var layoutPassword: LinearLayout
+
+    private var userEmail: String = ""
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        return inflater.inflate(R.layout.fragment_profil, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // view
+        viewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
+
+        sharedPref = requireActivity()
+            .getSharedPreferences(PrefConstants.PREF_NAME, AppCompatActivity.MODE_PRIVATE)
+
+        userEmail = sharedPref.getString(PrefConstants.KEY_EMAIL, "") ?: ""
+
         tvNama = view.findViewById(R.id.tvNama)
+        tvEmail = view.findViewById(R.id.tvEmail)
         etNama = view.findViewById(R.id.etNama)
         layoutEtNama = view.findViewById(R.id.layoutEtNama)
-        layoutEditMode = view.findViewById(R.id.layoutEditMode)
-        layoutViewMode = view.findViewById(R.id.layoutViewMode)
-        layoutPasswordMode = view.findViewById(R.id.layoutChangePasswordMode)
+
+        layoutView = view.findViewById(R.id.layoutViewMode)
+        layoutEdit = view.findViewById(R.id.layoutEditMode)
+        layoutPassword = view.findViewById(R.id.layoutChangePasswordMode)
 
         val btnEdit = view.findViewById<Button>(R.id.btnEdit)
         val btnLogout = view.findViewById<Button>(R.id.btnLogout)
-        val btnChangePhoto = view.findViewById<Button>(R.id.btnChangePhoto)
         val btnChangePassword = view.findViewById<Button>(R.id.btnChangePassword)
-        val btnSimpan = view.findViewById<Button>(R.id.btnSimpan)
-        val btnBatal = view.findViewById<Button>(R.id.btnBatal)
-        val btnPasswordBack = view.findViewById<Button>(R.id.btnPasswordBack)
-        val btnPasswordSave = view.findViewById<Button>(R.id.btnPasswordSave)
+        val btnSave = view.findViewById<Button>(R.id.btnSimpan)
+        val btnCancel = view.findViewById<Button>(R.id.btnBatal)
+        val btnPassBack = view.findViewById<Button>(R.id.btnPasswordBack)
+        val btnPassSave = view.findViewById<Button>(R.id.btnPasswordSave)
 
-        val sharedPref = requireActivity().getSharedPreferences(
-            PrefConstants.PREF_NAME,
-            AppCompatActivity.MODE_PRIVATE
-        )
+        viewModel.observeUser(userEmail)
 
-        tvNama.text = sharedPref.getString(PrefConstants.KEY_USERNAME, "Pengguna") // set nama
-        exitAllModes() // mulai di view mode
+        viewModel.userLiveData.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                tvNama.text = user.name
+                tvEmail.text = user.email
 
-        // klik tombol
-        btnEdit.setOnClickListener { enterEditMode() }
-        btnBatal.setOnClickListener { exitAllModes() }
-        btnChangePhoto.setOnClickListener { Toast.makeText(requireContext(), "Fitur ubah foto belum diaktifkan 📸", Toast.LENGTH_SHORT).show() }
-        btnLogout.setOnClickListener { showLogoutDialog(sharedPref) }
-        btnChangePassword.setOnClickListener { enterPasswordMode() }
-        btnPasswordBack.setOnClickListener { exitPasswordMode() }
-        btnPasswordSave.setOnClickListener { saveNewPassword(sharedPref) }
-
-        btnSimpan.setOnClickListener {
-            val namaBaru = etNama.text.toString().trim()
-            if (namaBaru.isEmpty()) {
-                Toast.makeText(requireContext(), "Nama tidak boleh kosong!", Toast.LENGTH_SHORT).show()
-            } else {
-                showSaveNameDialog(sharedPref, namaBaru) // simpan nama
+                sharedPref.edit()
+                    .putString(PrefConstants.KEY_USERNAME, user.name)
+                    .apply()
             }
         }
+
+        viewModel.updateStatus.observe(viewLifecycleOwner) { ok ->
+            if (ok) {
+                Toast.makeText(requireContext(), "Berhasil diperbarui!", Toast.LENGTH_SHORT).show()
+                exitModes()
+            } else {
+                Toast.makeText(requireContext(), "Gagal memperbarui!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnEdit.setOnClickListener { enterEditMode() }
+        btnCancel.setOnClickListener { exitModes() }
+        btnSave.setOnClickListener { saveNewName() }
+
+        btnChangePassword.setOnClickListener { enterPasswordMode() }
+        btnPassBack.setOnClickListener { exitModes() }
+        btnPassSave.setOnClickListener { saveNewPassword() }
+
+        btnLogout.setOnClickListener { logoutUser() }
     }
 
     private fun enterEditMode() {
-        // tampil mode edit nama
-        layoutViewMode.isVisible = false
-        tvNama.isVisible = false
-        layoutPasswordMode.isVisible = false
-        layoutEditMode.isVisible = true
+        layoutView.isVisible = false
+        layoutPassword.isVisible = false
+        layoutEdit.isVisible = true
         layoutEtNama.isVisible = true
         etNama.setText(tvNama.text)
     }
 
     private fun enterPasswordMode() {
-        // tampil mode ganti password
-        layoutViewMode.isVisible = false
-        layoutEditMode.isVisible = false
+        layoutView.isVisible = false
+        layoutEdit.isVisible = false
+        layoutPassword.isVisible = true
+    }
+
+    private fun exitModes() {
+        layoutView.isVisible = true
+        layoutEdit.isVisible = false
+        layoutPassword.isVisible = false
         layoutEtNama.isVisible = false
-        tvNama.isVisible = false
-        layoutPasswordMode.isVisible = true
     }
 
-    private fun exitPasswordMode() {
-        layoutPasswordMode.isVisible = false
-        enterEditMode() // balik ke edit nama
+    private fun saveNewName() {
+        val newName = etNama.text.toString().trim()
+        if (newName.isEmpty()) {
+            Toast.makeText(requireContext(), "Nama tidak boleh kosong!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        viewModel.updateName(userEmail, newName)
     }
 
-    private fun exitAllModes() {
-        // kembali ke view mode
-        layoutViewMode.isVisible = true
-        tvNama.isVisible = true
-        layoutEditMode.isVisible = false
-        layoutEtNama.isVisible = false
-        layoutPasswordMode.isVisible = false
-    }
-
-    private fun showSaveNameDialog(sharedPref: SharedPreferences, namaBaru: String) {
-        // dialog simpan nama
-        AlertDialog.Builder(requireContext())
-            .setTitle("Simpan Perubahan?")
-            .setMessage("Apakah kamu yakin ingin memperbarui profil?")
-            .setPositiveButton("Ya") { _, _ ->
-                sharedPref.edit().putString(PrefConstants.KEY_USERNAME, namaBaru).apply()
-                tvNama.text = namaBaru
-                exitAllModes()
-                Toast.makeText(requireContext(), "Profil berhasil diperbarui!", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Tidak", null)
-            .show()
-    }
-
-    private fun showLogoutDialog(sharedPref: SharedPreferences) {
-        // dialog logout
-        AlertDialog.Builder(requireContext())
-            .setTitle("Logout")
-            .setMessage("Apakah kamu yakin ingin keluar?")
-            .setPositiveButton("Ya") { _, _ ->
-                sharedPref.edit().putBoolean(PrefConstants.KEY_IS_LOGGED_IN, false).apply()
-                val intent = Intent(requireContext(), LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                Toast.makeText(requireContext(), "Berhasil logout!", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Tidak", null)
-            .show()
-    }
-
-    private fun saveNewPassword(sharedPref: SharedPreferences) {
-        // ambil input
+    private fun saveNewPassword() {
         val etCurrent = view?.findViewById<EditText>(R.id.etCurrentPassword)
         val etNew = view?.findViewById<EditText>(R.id.etNewPassword)
         val etConfirm = view?.findViewById<EditText>(R.id.etConfirmPassword)
-        if (etCurrent == null || etNew == null || etConfirm == null) return
 
-        val current = etCurrent.text.toString()
-        val newPass = etNew.text.toString()
-        val confirm = etConfirm.text.toString()
+        val current = etCurrent?.text.toString()
+        val newPass = etNew?.text.toString()
+        val confirm = etConfirm?.text.toString()
+
         val storedHash = sharedPref.getString(PrefConstants.KEY_PASSWORD, "")
 
-        // cek password
         if (hash(current) != storedHash) {
-            etCurrent.error = "Password saat ini salah"
+            etCurrent?.error = "Password salah"
             return
         }
         if (newPass.length < 8) {
-            etNew.error = "Minimal 8 karakter"
+            etNew?.error = "Minimal 8 karakter"
             return
         }
         if (newPass != confirm) {
-            etConfirm.error = "Konfirmasi tidak cocok"
+            etConfirm?.error = "Konfirmasi tidak cocok"
             return
         }
 
-        // simpan hash baru
-        val newPasswordHash = hash(newPass)
-        sharedPref.edit().putString(PrefConstants.KEY_PASSWORD, newPasswordHash).apply()
-        Toast.makeText(requireContext(), "Password berhasil diubah!", Toast.LENGTH_SHORT).show()
-        exitPasswordMode()
+        val newHash = hash(newPass)
+        viewModel.updatePassword(userEmail, newHash)
+        sharedPref.edit().putString(PrefConstants.KEY_PASSWORD, newHash).apply()
+    }
+
+    private fun logoutUser() {
+        sharedPref.edit().putBoolean(PrefConstants.KEY_IS_LOGGED_IN, false).apply()
+        startActivity(Intent(requireContext(), LoginActivity::class.java))
+        requireActivity().finish()
     }
 
     private fun hash(text: String): String {
-        // hash SHA-256
         val md = MessageDigest.getInstance("SHA-256")
-        val digest = md.digest(text.toByteArray(Charsets.UTF_8))
-        return digest.joinToString("") { "%02x".format(it) }
+        return md.digest(text.toByteArray())
+            .joinToString("") { "%02x".format(it) }
     }
 }

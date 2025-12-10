@@ -18,7 +18,10 @@ class ProdukFormFragment : Fragment() {
     private val decimalFormat =
         NumberFormat.getInstance(Locale("in", "ID")) as DecimalFormat
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return inflater.inflate(R.layout.fragment_produk_form, container, false)
     }
 
@@ -66,7 +69,7 @@ class ProdukFormFragment : Fragment() {
 
         arguments?.let {
             editIndex = it.getInt("index", -1).takeIf { i -> i != -1 }
-            val produk = editIndex?.let { i -> HomeFragment.productList[i] }
+            val produk = editIndex?.let { i -> LocalData.productList[i] }
 
             produk?.let {
                 etNama.setText(it.nama)
@@ -91,7 +94,12 @@ class ProdukFormFragment : Fragment() {
 
             val priceGap = listedPrice - discountedPrice
 
+            val existingId = editIndex?.let { idx ->
+                LocalData.productList.getOrNull(idx)?.id
+            }
+
             val newProduct = Product(
+                id = existingId,
                 nama = nama,
                 listedPrice = listedPrice,
                 discountedPrice = discountedPrice,
@@ -104,12 +112,14 @@ class ProdukFormFragment : Fragment() {
                 .setTitle("Konfirmasi")
                 .setMessage("Simpan data produk ini?")
                 .setPositiveButton("Ya") { _, _ ->
-                    if (editIndex != null) {
-                        HomeFragment.productList[editIndex!!] = newProduct
-                    } else {
-                        HomeFragment.productList.add(newProduct)
+                    FirestoreService.saveProduct(requireContext(), newProduct) { success, e ->
+                        if (!success) {
+                            Toast.makeText(requireContext(),
+                                "Gagal menyimpan: ${e?.message}", Toast.LENGTH_SHORT).show()
+                        } else {
+                            findNavController().popBackStack()
+                        }
                     }
-                    findNavController().popBackStack()
                 }
                 .setNegativeButton("Tidak", null)
                 .show()

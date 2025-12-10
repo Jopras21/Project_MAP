@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textfield.TextInputEditText
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,11 +25,11 @@ class ProductAdapter(
         val tvNama: TextView = view.findViewById(R.id.tvNamaProduk)
         val btnEdit: Button = view.findViewById(R.id.btnEdit)
         val btnDelete: Button = view.findViewById(R.id.btnDelete)
-        val btnMasuk: Button = view.findViewById(R.id.btnMasuk)     // ✅ BARU
-        val btnKeluar: Button = view.findViewById(R.id.btnKeluar)   // ✅ BARU
+        val btnMasuk: Button = view.findViewById(R.id.btnMasuk)
+        val btnKeluar: Button = view.findViewById(R.id.btnKeluar)
     }
 
-    private val formatter = DecimalFormat("#,###") // TETAP AMAN
+    private val formatter = DecimalFormat("#,###")
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -42,7 +43,6 @@ class ProductAdapter(
         holder.tvNama.text =
             "${produk.nama} | Rp${formatter.format(produk.listedPrice)} | Stok: ${produk.stok}"
 
-        // ✅ EDIT
         holder.btnEdit.setOnClickListener {
             val bundle = Bundle().apply {
                 putInt("index", position)
@@ -50,27 +50,33 @@ class ProductAdapter(
             navController.navigate(R.id.produkFormFragment, bundle)
         }
 
-        // ✅ DELETE
         holder.btnDelete.setOnClickListener {
             val ctx: Context = holder.itemView.context
             AlertDialog.Builder(ctx)
                 .setTitle("Konfirmasi Hapus")
                 .setMessage("Hapus produk '${produk.nama}'?")
                 .setPositiveButton("Ya") { _, _ ->
-                    data.removeAt(position)
-                    notifyItemRemoved(position)
-                    onDataChanged?.invoke()
+                    val productId = produk.id
+                    if (productId != null) {
+                        FirestoreService.deleteProduct(productId) { success, e ->
+                            if (!success) {
+                                android.widget.Toast.makeText(
+                                    ctx,
+                                    "Gagal hapus: ${e?.message}",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
                 }
                 .setNegativeButton("Tidak", null)
                 .show()
         }
 
-        // ✅ BARANG MASUK
         holder.btnMasuk.setOnClickListener {
             showInputDialog(holder.itemView.context, posisi = position, isMasuk = true)
         }
 
-        // ✅ BARANG KELUAR
         holder.btnKeluar.setOnClickListener {
             showInputDialog(holder.itemView.context, posisi = position, isMasuk = false)
         }
@@ -81,7 +87,7 @@ class ProductAdapter(
 
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_stok, null)
         val tvJudul = view.findViewById<TextView>(R.id.tvJudulDialog)
-        val etJumlah = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etJumlah)
+        val etJumlah = view.findViewById<TextInputEditText>(R.id.etJumlah)
         val btnBatal = view.findViewById<Button>(R.id.btnBatal)
         val btnSimpan = view.findViewById<Button>(R.id.btnSimpan)
 
@@ -91,9 +97,7 @@ class ProductAdapter(
             .setView(view)
             .create()
 
-        btnBatal.setOnClickListener {
-            dialog.dismiss()
-        }
+        btnBatal.setOnClickListener { dialog.dismiss() }
 
         btnSimpan.setOnClickListener {
             val jumlah = etJumlah.text.toString().toIntOrNull()
@@ -108,23 +112,26 @@ class ProductAdapter(
                 return@setOnClickListener
             }
 
-            // ✅ Update stok
             if (isMasuk) produk.stok += jumlah else produk.stok -= jumlah
 
-            // ✅ Simpan ke riwayat
-            val tanggal = java.text.SimpleDateFormat(
-                "dd-MM-yyyy HH:mm",
-                java.util.Locale.getDefault()
-            ).format(java.util.Date())
+            produk.id?.let { id ->
+                FirestoreService.updateProductStock(id, produk.stok)
+            }
 
-            HomeFragment.stockHistoryList.add(
-                StockHistory(
-                    namaProduk = produk.nama,
-                    jumlah = jumlah,
-                    jenis = if (isMasuk) "MASUK" else "KELUAR",
-                    tanggal = tanggal
-                )
+            val tanggal = SimpleDateFormat(
+                "dd-MM-yyyy HH:mm",
+                Locale.getDefault()
+            ).format(Date())
+
+            val history = StockHistory(
+                productId = produk.id ?: "",
+                namaProduk = produk.nama,
+                jumlah = jumlah,
+                jenis = if (isMasuk) "MASUK" else "KELUAR",
+                tanggal = tanggal
             )
+
+            FirestoreService.addStockHistory(context, history)
 
             notifyItemChanged(posisi)
             onDataChanged?.invoke()
@@ -133,7 +140,6 @@ class ProductAdapter(
 
         dialog.show()
     }
-
 
     override fun getItemCount(): Int = data.size
 }

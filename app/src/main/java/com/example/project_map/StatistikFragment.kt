@@ -38,8 +38,8 @@ class StatistikFragment : Fragment() {
         val tvProdukTerlaris = view.findViewById<TextView>(R.id.tvProdukTerlaris)
         val tvStokTerendah = view.findViewById<TextView>(R.id.tvStokTerendah)
 
-        val productList = HomeFragment.productList
-        val historyList = HomeFragment.stockHistoryList
+        val productList = LocalData.productList
+        val historyList = LocalData.stockHistoryList
 
         tvTotalProduk.text = productList.size.toString()
 

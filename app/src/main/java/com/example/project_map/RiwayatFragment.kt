@@ -23,7 +23,7 @@ class RiwayatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         recyclerView = view.findViewById(R.id.rvRiwayat)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = RiwayatAdapter(HomeFragment.stockHistoryList)
+        adapter = RiwayatAdapter(LocalData.stockHistoryList)
         recyclerView.adapter = adapter
     }
 

@@ -5,6 +5,7 @@ pluginManagement {
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
+                includeGroupByRegex("com\\.google\\.firebase.*")
             }
         }
         mavenCentral()
@@ -21,4 +22,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Project_MAP"
 include(":app")
- 
