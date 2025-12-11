@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class RiwayatAdapter(
-    private val data: List<StockHistory>
+    private val data: MutableList<StockHistory>
 ) : RecyclerView.Adapter<RiwayatAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -40,4 +40,10 @@ class RiwayatAdapter(
     }
 
     override fun getItemCount(): Int = data.size
+
+    fun updateData(newList: List<StockHistory>) {
+        data.clear()
+        data.addAll(newList)
+        notifyDataSetChanged()
+    }
 }

@@ -6,8 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import com.example.project_map.viewmodel.HomeViewModel
 
 class StatistikFragment : Fragment() {
+
+    private val viewModel: HomeViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -18,15 +22,13 @@ class StatistikFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        updateStatistik(view)
+
+        viewModel.start(requireContext())
+
+        observeData(view)
     }
 
-    override fun onResume() {
-        super.onResume()
-        view?.let { updateStatistik(it) }
-    }
-
-    private fun updateStatistik(view: View) {
+    private fun observeData(view: View) {
 
         val tvTotalProduk = view.findViewById<TextView>(R.id.tvTotalProduk)
         val tvRataHarga = view.findViewById<TextView>(R.id.tvRataHarga)
@@ -38,42 +40,18 @@ class StatistikFragment : Fragment() {
         val tvProdukTerlaris = view.findViewById<TextView>(R.id.tvProdukTerlaris)
         val tvStokTerendah = view.findViewById<TextView>(R.id.tvStokTerendah)
 
-        val productList = LocalData.productList
-        val historyList = LocalData.stockHistoryList
+        viewModel.products.observe(viewLifecycleOwner) {
+            tvTotalProduk.text = viewModel.getTotalProduk().toString()
+            tvRataHarga.text = "Rp${viewModel.getRataHarga().toInt()}"
+            tvTotalStok.text = viewModel.getTotalStok().toString()
+            tvPromoAktif.text = viewModel.getPromoAktif().toString()
+            tvStokTerendah.text = viewModel.getStokTerendah()
+        }
 
-        tvTotalProduk.text = productList.size.toString()
-
-        val rataHarga =
-            if (productList.isNotEmpty())
-                productList.sumOf { it.listedPrice } / productList.size
-            else 0.0
-
-        tvRataHarga.text = "Rp${rataHarga.toInt()}"
-
-        tvTotalStok.text = productList.sumOf { it.stok }.toString()
-        tvPromoAktif.text = productList.count { it.promoAktif }.toString()
-
-        val totalMasuk = historyList
-            .filter { it.jenis == "MASUK" }
-            .sumOf { it.jumlah }
-
-        val totalKeluar = historyList
-            .filter { it.jenis == "KELUAR" }
-            .sumOf { it.jumlah }
-
-        tvBarangMasuk.text = totalMasuk.toString()
-        tvBarangKeluar.text = totalKeluar.toString()
-
-        val produkTerlaris = historyList
-            .filter { it.jenis == "KELUAR" }
-            .groupBy { it.namaProduk }
-            .mapValues { it.value.sumOf { h -> h.jumlah } }
-            .maxByOrNull { it.value }
-
-        tvProdukTerlaris.text = produkTerlaris?.key ?: "-"
-
-        val stokTerendah = productList.minByOrNull { it.stok }
-        tvStokTerendah.text =
-            stokTerendah?.let { "${it.nama} (${it.stok})" } ?: "-"
+        viewModel.history.observe(viewLifecycleOwner) {
+            tvBarangMasuk.text = viewModel.getTotalMasuk().toString()
+            tvBarangKeluar.text = viewModel.getTotalKeluar().toString()
+            tvProdukTerlaris.text = viewModel.getProdukTerlaris()
+        }
     }
 }
