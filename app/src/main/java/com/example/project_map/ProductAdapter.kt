@@ -131,6 +131,8 @@ class ProductAdapter(
                 tanggal = tanggal
             )
 
+            history.createdAt = System.currentTimeMillis()
+
             FirestoreService.addStockHistory(context, history)
 
             notifyItemChanged(posisi)

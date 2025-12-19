@@ -66,6 +66,11 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.google.code.gson:gson:2.11.0")
 
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+    implementation ("com.google.firebase:firebase-storage-ktx")
+    implementation ("androidx.activity:activity-ktx:1.9.0")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

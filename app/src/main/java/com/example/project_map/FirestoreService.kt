@@ -17,6 +17,7 @@ object FirestoreService {
             "email" to email,
             "name" to name,
             "photoUrl" to "",
+            "photoBase64" to "",
             "createdAt" to System.currentTimeMillis()
         )
 
@@ -127,16 +128,16 @@ object FirestoreService {
             }
     }
 
-    fun addStockHistory(
-        context: Context,
-        history: StockHistory
-    ) {
+    fun addStockHistory(context: Context, history: StockHistory) {
         val userId = getUserId(context) ?: return
+
         history.userId = userId
+        history.createdAt = System.currentTimeMillis()
 
         val docRef = db.collection("stock_history").document()
         history.id = docRef.id
 
         docRef.set(history)
     }
+
 }

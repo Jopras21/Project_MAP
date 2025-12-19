@@ -1,167 +1,201 @@
 package com.example.project_map
 
+import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Base64
 import android.view.*
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.project_map.viewmodel.ProfileViewModel
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import java.security.MessageDigest
+import java.io.ByteArrayOutputStream
 
 class ProfilFragment : Fragment() {
 
-    private lateinit var viewModel: ProfileViewModel
-    private lateinit var sharedPref: SharedPreferences
+    private lateinit var vm: ProfileViewModel
+    private lateinit var email: String
 
-    private lateinit var tvNama: TextView
-    private lateinit var tvEmail: TextView
-    private lateinit var etNama: TextInputEditText
-    private lateinit var layoutEtNama: TextInputLayout
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                openCamera()
+            } else {
+                Toast.makeText(requireContext(), "Izin kamera diperlukan untuk fitur ini", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-    private lateinit var layoutView: LinearLayout
-    private lateinit var layoutEdit: LinearLayout
-    private lateinit var layoutPassword: LinearLayout
+    private val cameraLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == AppCompatActivity.RESULT_OK) {
 
-    private var userEmail: String = ""
+                val data = result.data
+                val bitmap = data?.extras?.get("data") as? Bitmap
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return inflater.inflate(R.layout.fragment_profil, container, false)
-    }
+                if (bitmap != null) {
+                    val stream = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+                    val base64 =
+                        Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT)
+
+                    view?.findViewById<ImageView>(R.id.ivProfile)
+                        ?.setImageBitmap(bitmap)
+
+                    vm.updatePhoto(email, base64)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Gagal mengambil foto",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = inflater.inflate(R.layout.fragment_profil, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
+        vm = ViewModelProvider(this)[ProfileViewModel::class.java]
 
-        sharedPref = requireActivity()
+        val sp = requireActivity()
             .getSharedPreferences(PrefConstants.PREF_NAME, AppCompatActivity.MODE_PRIVATE)
 
-        userEmail = sharedPref.getString(PrefConstants.KEY_EMAIL, "") ?: ""
+        email = sp.getString(PrefConstants.KEY_EMAIL, "") ?: ""
 
-        tvNama = view.findViewById(R.id.tvNama)
-        tvEmail = view.findViewById(R.id.tvEmail)
-        etNama = view.findViewById(R.id.etNama)
-        layoutEtNama = view.findViewById(R.id.layoutEtNama)
+        val tvNama = view.findViewById<TextView>(R.id.tvNama)
+        val tvEmail = view.findViewById<TextView>(R.id.tvEmail)
+        val ivProfile = view.findViewById<ImageView>(R.id.ivProfile)
 
-        layoutView = view.findViewById(R.id.layoutViewMode)
-        layoutEdit = view.findViewById(R.id.layoutEditMode)
-        layoutPassword = view.findViewById(R.id.layoutChangePasswordMode)
+        val layoutView = view.findViewById<LinearLayout>(R.id.layoutViewMode)
+        val layoutEdit = view.findViewById<LinearLayout>(R.id.layoutEditMode)
+        val layoutPass = view.findViewById<LinearLayout>(R.id.layoutChangePasswordMode)
+        val layoutEtNama = view.findViewById<View>(R.id.layoutEtNama)
 
-        val btnEdit = view.findViewById<Button>(R.id.btnEdit)
-        val btnLogout = view.findViewById<Button>(R.id.btnLogout)
-        val btnChangePassword = view.findViewById<Button>(R.id.btnChangePassword)
-        val btnSave = view.findViewById<Button>(R.id.btnSimpan)
-        val btnCancel = view.findViewById<Button>(R.id.btnBatal)
-        val btnPassBack = view.findViewById<Button>(R.id.btnPasswordBack)
-        val btnPassSave = view.findViewById<Button>(R.id.btnPasswordSave)
+        fun showView() {
+            layoutView.isVisible = true
+            layoutEdit.isVisible = false
+            layoutPass.isVisible = false
+            layoutEtNama.isVisible = false
+        }
 
-        viewModel.observeUser(userEmail)
+        vm.observeUser(email)
+        vm.userData.observe(viewLifecycleOwner) { data ->
+            if (data != null) {
+                tvNama.text = data["name"] as? String ?: ""
+                tvEmail.text = data["email"] as? String ?: ""
 
-        viewModel.userLiveData.observe(viewLifecycleOwner) { user ->
-            if (user != null) {
-                tvNama.text = user.name
-                tvEmail.text = user.email
-
-                sharedPref.edit()
-                    .putString(PrefConstants.KEY_USERNAME, user.name)
-                    .apply()
+                val photo64 = data["photoBase64"] as? String
+                if (!photo64.isNullOrEmpty()) {
+                    try {
+                        val bytes = Base64.decode(photo64, Base64.DEFAULT)
+                        ivProfile.setImageBitmap(
+                            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
             }
         }
 
-        viewModel.updateStatus.observe(viewLifecycleOwner) { ok ->
+        vm.updateResult.observe(viewLifecycleOwner) { ok ->
             if (ok) {
-                Toast.makeText(requireContext(), "Berhasil diperbarui!", Toast.LENGTH_SHORT).show()
-                exitModes()
-            } else {
-                Toast.makeText(requireContext(), "Gagal memperbarui!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Perubahan berhasil",
+                    Toast.LENGTH_SHORT
+                ).show()
+                showView()
             }
         }
 
-        btnEdit.setOnClickListener { enterEditMode() }
-        btnCancel.setOnClickListener { exitModes() }
-        btnSave.setOnClickListener { saveNewName() }
-
-        btnChangePassword.setOnClickListener { enterPasswordMode() }
-        btnPassBack.setOnClickListener { exitModes() }
-        btnPassSave.setOnClickListener { saveNewPassword() }
-
-        btnLogout.setOnClickListener { logoutUser() }
-    }
-
-    private fun enterEditMode() {
-        layoutView.isVisible = false
-        layoutPassword.isVisible = false
-        layoutEdit.isVisible = true
-        layoutEtNama.isVisible = true
-        etNama.setText(tvNama.text)
-    }
-
-    private fun enterPasswordMode() {
-        layoutView.isVisible = false
-        layoutEdit.isVisible = false
-        layoutPassword.isVisible = true
-    }
-
-    private fun exitModes() {
-        layoutView.isVisible = true
-        layoutEdit.isVisible = false
-        layoutPassword.isVisible = false
-        layoutEtNama.isVisible = false
-    }
-
-    private fun saveNewName() {
-        val newName = etNama.text.toString().trim()
-        if (newName.isEmpty()) {
-            Toast.makeText(requireContext(), "Nama tidak boleh kosong!", Toast.LENGTH_SHORT).show()
-            return
-        }
-        viewModel.updateName(userEmail, newName)
-    }
-
-    private fun saveNewPassword() {
-        val etCurrent = view?.findViewById<EditText>(R.id.etCurrentPassword)
-        val etNew = view?.findViewById<EditText>(R.id.etNewPassword)
-        val etConfirm = view?.findViewById<EditText>(R.id.etConfirmPassword)
-
-        val current = etCurrent?.text.toString()
-        val newPass = etNew?.text.toString()
-        val confirm = etConfirm?.text.toString()
-
-        val storedHash = sharedPref.getString(PrefConstants.KEY_PASSWORD, "")
-
-        if (hash(current) != storedHash) {
-            etCurrent?.error = "Password salah"
-            return
-        }
-        if (newPass.length < 8) {
-            etNew?.error = "Minimal 8 karakter"
-            return
-        }
-        if (newPass != confirm) {
-            etConfirm?.error = "Konfirmasi tidak cocok"
-            return
+        view.findViewById<Button>(R.id.btnEdit).setOnClickListener {
+            layoutView.isVisible = false
+            layoutEdit.isVisible = true
+            layoutEtNama.isVisible = true
         }
 
-        val newHash = hash(newPass)
-        viewModel.updatePassword(userEmail, newHash)
-        sharedPref.edit().putString(PrefConstants.KEY_PASSWORD, newHash).apply()
+        view.findViewById<Button>(R.id.btnBatal).setOnClickListener {
+            showView()
+        }
+
+        view.findViewById<Button>(R.id.btnSimpan).setOnClickListener {
+            val newName =
+                view.findViewById<EditText>(R.id.etNama).text.toString().trim()
+            if (newName.isNotEmpty()) {
+                vm.updateName(email, newName)
+            }
+        }
+
+        view.findViewById<Button>(R.id.btnChangePhoto).setOnClickListener {
+            checkAndOpenCamera()
+        }
+
+        view.findViewById<Button>(R.id.btnChangePassword).setOnClickListener {
+            layoutEdit.isVisible = false
+            layoutPass.isVisible = true
+        }
+
+        view.findViewById<Button>(R.id.btnPasswordBack).setOnClickListener {
+            showView()
+        }
+
+        view.findViewById<Button>(R.id.btnPasswordSave).setOnClickListener {
+            val newPass =
+                view.findViewById<EditText>(R.id.etNewPassword).text.toString()
+            val confirm =
+                view.findViewById<EditText>(R.id.etConfirmPassword).text.toString()
+
+            if (newPass == confirm && newPass.length >= 8) {
+                vm.updatePassword(email, newPass)
+            } else {
+                Toast.makeText(requireContext(), "Password tidak cocok / kurang dari 8 karakter", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        view.findViewById<Button>(R.id.btnLogout).setOnClickListener {
+            sp.edit().clear().apply()
+            startActivity(Intent(requireContext(), LoginActivity::class.java))
+            requireActivity().finish()
+        }
     }
 
-    private fun logoutUser() {
-        sharedPref.edit().putBoolean(PrefConstants.KEY_IS_LOGGED_IN, false).apply()
-        startActivity(Intent(requireContext(), LoginActivity::class.java))
-        requireActivity().finish()
+    private fun checkAndOpenCamera() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            openCamera()
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
     }
 
-    private fun hash(text: String): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        return md.digest(text.toByteArray())
-            .joinToString("") { "%02x".format(it) }
+    private fun openCamera() {
+        try {
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            cameraLauncher.launch(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(requireContext(), "Aplikasi kamera tidak ditemukan", Toast.LENGTH_SHORT).show()
+        } catch (e: SecurityException) {
+            Toast.makeText(requireContext(), "Akses kamera ditolak oleh sistem", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 }

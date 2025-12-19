@@ -6,6 +6,8 @@ data class User(
     var email: String = "",
     var passwordHash: String = "",
     var photoUrl: String = "",
+    var photoBase64: String = "",
     var createdAt: Long = 0,
     var lastLogin: Long = 0
 )
+

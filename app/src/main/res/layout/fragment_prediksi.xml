@@ -10,25 +10,37 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvTitlePrediksi"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Prediksi Penjualan"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="4dp" />
+            android:orientation="vertical"
+            android:paddingBottom="8dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Pilih produk untuk melihat prediksi penjualan"
-            android:textSize="14sp"
-            android:alpha="0.7"
-            android:layout_marginBottom="16dp" />
+            <TextView
+                android:id="@+id/tvTitlePrediksi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Prediksi Penjualan"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:padding="16dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pilih produk untuk melihat prediksi penjualan"
+                android:textSize="14sp"
+                android:alpha="0.7"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:layout_marginBottom="16dp" />
+        </LinearLayout>
 
         <Spinner
             android:id="@+id/spProduk"
@@ -61,14 +73,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Harga: Rp0"
-                android:textSize="14sp"
-                android:layout_marginBottom="4dp"/>
-
-            <TextView
-                android:id="@+id/tvRingkasanDiskon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Diskon: 0%"
                 android:textSize="14sp"
                 android:layout_marginBottom="4dp"/>
 
